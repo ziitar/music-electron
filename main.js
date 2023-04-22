@@ -1,11 +1,10 @@
-const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, Menu } = require("electron");
 const { renderMenu } = require("./menu");
+const { registerIpcMain } = require("./ipcMain");
 const path = require("path");
 
 function createWindow() {
-  ipcMain.on("update-files", (event, value) => {
-    console.log(value);
-  });
+  registerIpcMain();
   const win = new BrowserWindow({
     width: 1366,
     height: 665,
@@ -22,13 +21,7 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-app.on("open-file", (event, path) => {
-  console.log("app on open file", path);
-});
-
-app.on("ready", () => {
-  console.log(Menu.getApplicationMenu());
-});
+app.on("ready", () => {});
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });

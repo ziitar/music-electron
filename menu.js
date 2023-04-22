@@ -15,9 +15,8 @@ function renderMenu(window) {
               })
               .then((result) => {
                 if (!result.canceled) {
-                  const path = result.filePaths[0];
-                  const content = fs.readFileSync(path).toString();
-                  console.log(content);
+                  const files = result.filePaths;
+                  window.webContents.send("open-files", files);
                 }
               });
           },
@@ -33,8 +32,7 @@ function renderMenu(window) {
                 if (!result.canceled) {
                   const path = result.filePaths[0];
                   const fileList = fs.readdirSync(path);
-                  window.webContents.send("update-files", fileList);
-                  console.log("send files", fileList);
+                  window.webContents.send("open-directory", path, fileList);
                 }
               });
           },
