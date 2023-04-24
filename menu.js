@@ -1,5 +1,6 @@
 const { Menu, dialog } = require("electron");
 const fs = require("fs");
+const nodePath = require("node:path");
 
 function renderMenu(window) {
   const template = [
@@ -32,7 +33,20 @@ function renderMenu(window) {
                 if (!result.canceled) {
                   const path = result.filePaths[0];
                   const fileList = fs.readdirSync(path);
-                  window.webContents.send("open-directory", path, fileList);
+                  window.webContents.send(
+                    "open-directory",
+                    path,
+                    fileList.filter((item) =>
+                      [
+                        ".mp3",
+                        ".wav",
+                        ".wma",
+                        ".flac",
+                        ".ogg",
+                        ".aac",
+                      ].includes(nodePath.extname(item))
+                    )
+                  );
                 }
               });
           },
