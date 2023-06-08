@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu } = require("electron");
+const { app, BrowserWindow } = require("electron");
 const { renderMenu } = require("./menu");
 const { registerIpcMain } = require("./ipcMain");
 const path = require("path");
@@ -13,9 +13,7 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  const menu = renderMenu(win);
-  Menu.setApplicationMenu(menu);
-  win.loadURL("http://192.168.1.189:4200/music");
+  renderMenu(win);
   win.webContents.openDevTools();
 }
 

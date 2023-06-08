@@ -1,0 +1,5 @@
+{
+    "music-id3": "http://localhost:4200/music",
+    "music-library": "http://localhost:4200/library",
+    "cue-encode": "http://localhost:4200/encode"
+}

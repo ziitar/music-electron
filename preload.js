@@ -6,4 +6,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   invokeReadID3: (root, file) => ipcRenderer.invoke("read-ID3", root, file),
   invokeSetID3: (root, file, tags) =>
     ipcRenderer.invoke("set-ID3", root, file, tags),
+  invokeReadCue: (root, file) => ipcRenderer.invoke("read-cue", root, file),
+  invokeSetCue: (root, file, content) =>
+    ipcRenderer.invoke("set-cue", root, file, content),
 });
