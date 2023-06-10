@@ -1,5 +1,6 @@
 {
     "music-id3": "http://localhost:4200/music",
     "music-library": "http://localhost:4200/library",
-    "cue-encode": "http://localhost:4200/encode"
+    "cue-encode": "http://localhost:4200/encode",
+    "ffprobePath": "C:\\Program Files\\ffmpeg-6.0-essentials_build\\ffmpeg-6.0-essentials_build\\bin\\ffprobe.exe"
 }

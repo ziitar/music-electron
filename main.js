@@ -4,7 +4,6 @@ const { registerIpcMain } = require("./ipcMain");
 const path = require("path");
 
 function createWindow() {
-  registerIpcMain();
   const win = new BrowserWindow({
     width: 1366,
     height: 665,
@@ -13,6 +12,7 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
     },
   });
+  registerIpcMain(win);
   renderMenu(win);
   win.webContents.openDevTools();
 }

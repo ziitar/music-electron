@@ -70,15 +70,9 @@ function switchMenu(flag, window) {
                 if (!result.canceled) {
                   const path = result.filePaths[0];
                   const fileList = await readDir(path, (item) =>
-                    [
-                      ".mp3",
-                      ".wav",
-                      ".wma",
-                      ".flac",
-                      ".ogg",
-                      ".aac",
-                      ".cue",
-                    ].includes(nodePath.extname(item))
+                    [".mp3", ".wav", ".wma", ".flac", ".ogg", ".aac"].includes(
+                      nodePath.extname(item)
+                    )
                   );
                   window.webContents.send("open-directory", path, fileList);
                 }
@@ -111,24 +105,15 @@ function switchMenu(flag, window) {
               .showOpenDialog({
                 properties: ["openDirectory"],
               })
-              .then((result) => {
+              .then(async (result) => {
                 if (!result.canceled) {
                   const path = result.filePaths[0];
-                  const fileList = fs.readdirSync(path);
-                  window.webContents.send(
-                    "open-directory",
-                    path,
-                    fileList.filter((item) =>
-                      [
-                        ".mp3",
-                        ".wav",
-                        ".wma",
-                        ".flac",
-                        ".ogg",
-                        ".aac",
-                      ].includes(nodePath.extname(item))
+                  const fileList = await readDir(path, (item) =>
+                    [".mp3", ".wav", ".wma", ".flac", ".ogg", ".aac"].includes(
+                      nodePath.extname(item)
                     )
                   );
+                  window.webContents.send("open-directory", path, fileList);
                 }
               });
           },
