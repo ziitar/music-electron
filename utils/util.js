@@ -55,24 +55,24 @@ function getAbsolutePath(root, file) {
 
 async function getID3(root, file) {
   const filePath = nodePath.join(root, file);
-  const { common } = await parseFile(filePath);
+  const { common, format } = await parseFile(filePath);
   const extendsObj = {};
   if (common.picture && common.picture[0]) {
     const image = common.picture[0];
     extendsObj.image = {
-      mime: image.mime,
+      mime: image.format,
       imageBuffer: image.data,
     };
   }
   if (
     !common.comment ||
-    !common.comment.text ||
-    !/^[0-9:]+$/.test(common.comment.text)
+    !common.comment.length ||
+    !/^[0-9:]+$/.test(common.comment[0])
   ) {
-    const duration = await getAudioDuration(root, file);
-    if (duration) {
-      extendsObj.comment = common.comment || {};
-      extendsObj.comment.text = msToTime(duration * 1000);
+    // const duration = await getAudioDuration(root, file);
+    if (format.duration) {
+      extendsObj.comment = [];
+      extendsObj.comment[0] = msToTime(format.duration * 1000);
     }
   }
   return {
@@ -81,29 +81,43 @@ async function getID3(root, file) {
   };
 }
 
+/**
+ * 将ID3写入音频文件
+ * 程序将 music-metadata库的ICommonTagsResult类型某些字段转化为python music_tag 的对应字段
+ * python music_tag支持的字段有：
+ * Disc Number,Total Discs,Track Number,Total Tracks,Title,Artist,Album,Album Artist,Year,Genre,Comment,filename
+ * @param {string} path 文件路径
+ * @param {Tags} tags 类型为：https://github.com/Borewit/music-metadata/blob/master/lib/type.ts  ICommonTagsResult 类型
+ * @returns {Promise<string>} 返回python程序std信息
+ */
 function execPy(path, tags) {
-  return new Promise(async (resolve, reject) => {
-    const cmd = `${nodePath.join(root, "py/dist/music-tags.exe")} ${[
-      path,
-      tags.title,
-      tags.artist,
-      tags.album,
-      tags.year,
-      tags.image,
-    ]
-      .map((item) => {
-        if (typeof item === "string") {
-          return `"${item}"`;
+  const msg = Object.entries(tags)
+    .filter((item) => {
+      return config["ID3-item"].includes(item[0]);
+    })
+    .map((item) => {
+      const [key, value] = item;
+      if (key === "comment") {
+        return `-comment="${value[0]}"`;
+      } else {
+        if (typeof value === "string") {
+          return `-${key}="${value}"`;
         }
-        return item;
-      })
-      .join(" ")}`;
+        return `-${key}=${value}`;
+      }
+    })
+    .join(" ");
+  return new Promise(async (resolve, reject) => {
+    const cmd = `"${nodePath.join(
+      root,
+      "py/dist/music-tags/music-tags.exe"
+    )}" "${path}" ${msg}`;
     const { stdout, stderr } = await asyncExec(cmd);
 
     if (stderr) {
       reject(stderr);
     } else {
-      console.log(stdout);
+      console.log(tags.title, stdout);
       resolve(stdout);
     }
   });

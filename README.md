@@ -5,3 +5,14 @@
 ```shell
 > git clone https://github.com/ziitar/music-electron.git && cd music-electron
 ```
+
+
+## build music-tags.py to executable
+for windows cmd
+```cmd
+> cd py
+> python -m venv .venv
+> .venv\Scripts\activate.bat
+> pip install -r requirements.txt
+> pyinstaller music-tags.py
+```

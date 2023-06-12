@@ -1,4 +1,3 @@
-import musicMetadata from "music-metadata";
 import utils from "./util.js";
 import test from "node:test";
 import nodePath from "node:path";
@@ -26,12 +25,23 @@ test("test utils getCue", { skip: true }, async (t) => {
   }
 });
 
-test("test utils getCue", { skip: false }, async (t) => {
+test("test utils getCue", { skip: true }, async (t) => {
   try {
     const result = await utils.getAudioDuration("Y:\\911\\I Do", "I Do.mp3");
     console.log(result);
     assert.equal(typeof result, "number");
     assert.equal(result, 202);
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+test("test getID3", { skip: false }, async () => {
+  try {
+    const root = "Y:\\911\\I Do";
+    const result = await utils.getID3(root, "I Do.mp3");
+    assert.equal(typeof result.comment, "object");
+    assert.equal(result.comment.length, 1);
   } catch (e) {
     console.error(e);
   }
