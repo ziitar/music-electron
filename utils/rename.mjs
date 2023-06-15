@@ -96,7 +96,6 @@ async function moveFile(fileName, tags) {
     if (tags.year) formData.set("year", tags.year);
     if (tags.comment && tags.comment[0])
       formData.set("duration", tags.comment[0]);
-    console.log(image);
     if (typeof image === "string") {
       formData.set("picUrl", image);
     } else if (image) {
