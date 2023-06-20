@@ -13,7 +13,7 @@
     "genre",
     "totalTracks",
     "trackNumber",
-    "albumArtist",
+    "albumartist",
     "discNumber"
   ]
 }

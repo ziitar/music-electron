@@ -93,14 +93,23 @@ async function getID3(root, file) {
 function execPy(path, tags) {
   const msg = Object.entries(tags)
     .filter((item) => {
+      if (
+        config["ID3-item"].includes("trackNumber") &&
+        config["ID3-item"].includes("totalTracks") &&
+        item[0] === "track"
+      ) {
+        return true;
+      }
       return config["ID3-item"].includes(item[0]);
     })
     .map((item) => {
       const [key, value] = item;
       if (key === "comment") {
         return `-comment="${value[0]}"`;
+      } else if (key === "track") {
+        return `-totalTracks=${value.of} -trackNumber=${value.no}`;
       } else {
-        if (typeof value === "string") {
+        if (typeof value === "string" || key === "genre") {
           return `-${key}="${value}"`;
         }
         return `-${key}=${value}`;
