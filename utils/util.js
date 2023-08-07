@@ -64,20 +64,12 @@ async function getID3(root, file) {
       imageBuffer: image.data,
     };
   }
-  if (
-    !common.comment ||
-    !common.comment.length ||
-    !/^[0-9:]+$/.test(common.comment[0])
-  ) {
-    // const duration = await getAudioDuration(root, file);
-    if (format.duration) {
-      extendsObj.comment = [];
-      extendsObj.comment[0] = msToTime(format.duration * 1000);
-    }
-  }
   return {
-    ...common,
-    ...extendsObj,
+    common: {
+      ...common,
+      ...extendsObj,
+    },
+    format,
   };
 }
 

@@ -7,7 +7,7 @@
    - [x] 对比库里的歌曲
    - [x] 格式化cue编码
    - [x] 将本地歌曲录入数据库
-   - [x] 根据音频文件ID3信息重命名及移动音频文件且入库
+   - [x] 根据音频文件ID3信息重命名及移动音频文件且录入数据库
    - [x] 支持除整轨音频文件外的其他常用格式,如mp3,flac,acc,wav
 
 ## 使用
@@ -28,7 +28,7 @@
 ## 配置
 可以在config.json配置中设置前端UI界面的地址,也可以通过更改ID3-item字段来更改写入音频文件的ID3字段
 
-## build music-tags.py to executable
+## 编译music-tags.py为可以执行文件
 for windows cmd
 ```cmd
 > cd py

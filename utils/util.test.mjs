@@ -39,7 +39,7 @@ test("test utils getCue", { skip: true }, async (t) => {
 test("test getID3", { skip: false }, async () => {
   try {
     const root = "Y:\\911\\I Do";
-    const result = await utils.getID3(root, "I Do.mp3");
+    const { common: result } = await utils.getID3(root, "I Do.mp3");
     assert.equal(typeof result.comment, "object");
     assert.equal(result.comment.length, 1);
   } catch (e) {

@@ -3,6 +3,7 @@ import fsPromises from "node:fs/promises";
 import fs from "node:fs";
 import nodePath from "node:path";
 import fetch, { FormData, File } from "node-fetch";
+import config from "../config.json";
 
 const root = "Y:\\tmp";
 const topRoot = nodePath.resolve(root, "..");
@@ -37,53 +38,48 @@ function getExtension(mime) {
   }
   return "";
 }
-
-async function moveFile(fileName, tags) {
-  let { title, album, artist, image } = tags;
-  if (true) {
-    const name = `${album.replace(/[\\/:?''<>|]/g, "-")}.jpg`;
+function formatFileName(name) {
+  return name.replace(/[\\/:?''<>|]/g, "_");
+}
+async function moveFile(fileName, tags, format) {
+  let { title, album, albumartist, artist, image } = tags;
+  if (!image) {
+    const name = `${formatFileName(album)}-${formatFileName(albumartist)}.jpg`;
     const imgPath = nodePath.join("C:\\Users\\uziit\\Pictures", name);
     if (fs.existsSync(imgPath)) {
       try {
-        await fsPromises.rename(
-          imgPath,
-          nodePath.join(
-            "C:\\Users\\uziit\\Documents\\visualizeMusicBackend\\assets",
-            name
-          )
-        );
-        await execPy(nodePath.join(root, fileName), {
-          image: `http://localhost:7000/assets/${name}`,
-          comment: tags.comment,
+        const imageFile = await fsPromises.readFile(imgPath);
+        const formData = new FormData();
+        formData.set("file", imageFile, name);
+        await fetch(`${config.backendhost}/assets/upload`, {
+          method: "PUT",
+          body: formData,
         });
-        image = `http://localhost:7000/assets/${name}`;
+        await execPy(nodePath.join(root, fileName), {
+          image: `${config.backendhost}/assets/${name}`,
+        });
+        image = `/assets/${name}`;
       } catch (e) {
         console.error(e);
       }
     }
   }
   let changeArtist = artist.replace(/[,，、]/g, " & ").replace(/\b&\b/g, " & ");
-  const artistPath = nodePath.resolve(
-    topRoot,
-    changeArtist.replace(/[\\/:?''<>|]/g, "-")
-  );
+  const artistPath = nodePath.resolve(topRoot, formatFileName(changeArtist));
   try {
     const extname = nodePath.extname(fileName);
     const existArtist = fs.existsSync(artistPath);
     if (!existArtist) {
       await fsPromises.mkdir(artistPath);
     }
-    const albumPath = nodePath.resolve(
-      artistPath,
-      album.replace(/[\\/:?''<>|]/g, "-")
-    );
+    const albumPath = nodePath.resolve(artistPath, formatFileName(album));
     const existAlbum = fs.existsSync(albumPath);
     if (!existAlbum) {
       await fsPromises.mkdir(albumPath);
     }
     const url = nodePath.resolve(
       albumPath,
-      `${title.replace(/[\\/:?''<>|]/g, "-")}${extname}`
+      `${formatFileName(title)}${extname}`
     );
     await fsPromises.rename(nodePath.join(root, fileName), url);
     const formData = new FormData();
@@ -92,10 +88,17 @@ async function moveFile(fileName, tags) {
     formData.set("title", title);
     formData.set("artist", artist);
     formData.set("album", album);
-    formData.set("albumartist", artist);
-    if (tags.year) formData.set("year", tags.year);
-    if (tags.comment && tags.comment[0])
-      formData.set("duration", tags.comment[0]);
+    formData.set("albumartist", albumartist);
+    formData.set("year", tags.year || null);
+    formData.set("duration", format.duration || null);
+    formData.set("trackNo", tags.track.no || null);
+    formData.set("trackTotal", tags.track.of || null);
+    formData.set("diskNo", tags.disk.no || null);
+    formData.set("diskTotal", tags.disk.of || null);
+    formData.set("lossless", format.lossless || null);
+    formData.set("sampleRat", format.sampleRat || null);
+    formData.set("start", format.start || null);
+    formData.set("bitrate", format.bitrate || null);
     if (typeof image === "string") {
       formData.set("picUrl", image);
     } else if (image) {
@@ -104,7 +107,7 @@ async function moveFile(fileName, tags) {
       const img = new File([image.imageBuffer], fileName, { type: type });
       formData.set("file", img, fileName);
     }
-    const res = await fetch("http://0.0.0.0:7000/songs/create", {
+    const res = await fetch(`${config.backendhost}/songs/create`, {
       method: "POST",
       body: formData,
     });
@@ -130,8 +133,8 @@ const run = async () => {
           )
         ) {
           const tags = await getID3(root, dirent.name);
-          if (tags) {
-            await moveFile(dirent.name, tags);
+          if (tags.common) {
+            await moveFile(dirent.name, tags.common, tags.format);
           }
         }
       }
