@@ -3,7 +3,7 @@ import fsPromises from "node:fs/promises";
 import fs from "node:fs";
 import nodePath from "node:path";
 import fetch, { FormData, File } from "node-fetch";
-import config from "../config.json";
+import config from "../config.json" assert { type: "json" };
 
 const root = "Y:\\tmp";
 const topRoot = nodePath.resolve(root, "..");
@@ -84,7 +84,7 @@ async function moveFile(fileName, tags, format) {
     await fsPromises.rename(nodePath.join(root, fileName), url);
     const formData = new FormData();
     formData.set("type", "single");
-    formData.set("url", url);
+    formData.set("url", nodePath.relative(config.source, url));
     formData.set("title", title);
     formData.set("artist", artist);
     formData.set("album", album);
@@ -103,7 +103,9 @@ async function moveFile(fileName, tags, format) {
       formData.set("picUrl", image);
     } else if (image) {
       const type = image.mime || "image/jpeg";
-      const fileName = `${album}${getExtension(type)}`;
+      const fileName = `${album}${getExtension(
+        type.replace(/(\w+\/\w+).*/, "$1")
+      )}`;
       const img = new File([image.imageBuffer], fileName, { type: type });
       formData.set("file", img, fileName);
     }

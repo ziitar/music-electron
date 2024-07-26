@@ -55,22 +55,27 @@ function getAbsolutePath(root, file) {
 
 async function getID3(root, file) {
   const filePath = nodePath.join(root, file);
-  const { common, format } = await parseFile(filePath);
-  const extendsObj = {};
-  if (common.picture && common.picture[0]) {
-    const image = common.picture[0];
-    extendsObj.image = {
-      mime: image.format,
-      imageBuffer: image.data,
+  try {
+    const { common, format } = await parseFile(filePath);
+    const extendsObj = {};
+    if (common.picture && common.picture[0]) {
+      const image = common.picture[0];
+      extendsObj.image = {
+        mime: image.format,
+        imageBuffer: image.data,
+      };
+    }
+    return {
+      common: {
+        ...common,
+        ...extendsObj,
+      },
+      format,
     };
+  } catch (e) {
+    console.error(e);
+    return {};
   }
-  return {
-    common: {
-      ...common,
-      ...extendsObj,
-    },
-    format,
-  };
 }
 
 /**
@@ -160,7 +165,7 @@ async function readDir(path, filter, extendsPath = "") {
   const files = await readdir(path, { withFileTypes: true });
   for (const file of files) {
     if (file.isFile()) {
-      if (filter(file.name)) {
+      if (await filter(nodePath.join(extendsPath, file.name))) {
         result.push(nodePath.join(extendsPath, file.name));
       }
     } else {

@@ -2,27 +2,31 @@ const { Menu, dialog } = require("electron");
 const fs = require("fs");
 const nodePath = require("node:path");
 const config = require("./config.json");
-const { readDir } = require("./utils/util.js");
+const { readDir, getID3 } = require("./utils/util.js");
+
+const openFile = (window) => {
+  return {
+    label: "打开文件",
+    click: () => {
+      dialog
+        .showOpenDialog({
+          properties: ["openFile"],
+        })
+        .then((result) => {
+          if (!result.canceled) {
+            const files = result.filePaths;
+            window.webContents.send("open-directory", ".", files);
+          }
+        });
+    },
+  };
+};
 
 function switchMenu(flag, window) {
   switch (flag) {
     case 3:
       return [
-        {
-          label: "打开文件",
-          click: () => {
-            dialog
-              .showOpenDialog({
-                properties: ["openFile"],
-              })
-              .then((result) => {
-                if (!result.canceled) {
-                  const files = result.filePaths;
-                  window.webContents.send("open-files", files);
-                }
-              });
-          },
-        },
+        openFile(window),
         {
           label: "打开文件夹",
           click: () => {
@@ -44,21 +48,7 @@ function switchMenu(flag, window) {
       ];
     case 2:
       return [
-        {
-          label: "打开文件",
-          click: () => {
-            dialog
-              .showOpenDialog({
-                properties: ["openFile"],
-              })
-              .then((result) => {
-                if (!result.canceled) {
-                  const files = result.filePaths;
-                  window.webContents.send("open-files", files);
-                }
-              });
-          },
-        },
+        openFile(window),
         {
           label: "打开文件夹",
           click: () => {
@@ -83,21 +73,7 @@ function switchMenu(flag, window) {
     case 1:
     default:
       return [
-        {
-          label: "打开文件",
-          click: () => {
-            dialog
-              .showOpenDialog({
-                properties: ["openFile"],
-              })
-              .then((result) => {
-                if (!result.canceled) {
-                  const files = result.filePaths;
-                  window.webContents.send("open-files", files);
-                }
-              });
-          },
-        },
+        openFile(window),
         {
           label: "打开文件夹",
           click: () => {
@@ -113,6 +89,46 @@ function switchMenu(flag, window) {
                       nodePath.extname(item)
                     )
                   );
+                  window.webContents.send("open-directory", path, fileList);
+                }
+              });
+          },
+        },
+        {
+          label: "整理TAG",
+          click: () => {
+            dialog
+              .showOpenDialog({
+                properties: ["openDirectory"],
+              })
+              .then(async (result) => {
+                if (!result.canceled) {
+                  const path = result.filePaths[0];
+                  const fileList = await readDir(path, async (item) => {
+                    if (
+                      [
+                        ".mp3",
+                        ".wav",
+                        ".wma",
+                        ".flac",
+                        ".ogg",
+                        ".aac",
+                      ].includes(nodePath.extname(item))
+                    ) {
+                      const { common } = await getID3(path, item);
+                      if (
+                        common &&
+                        ["artist", "albumartist", "album"].some(
+                          (tag) => common[tag] === undefined
+                        )
+                      ) {
+                        return true;
+                      }
+                      return false;
+                    } else {
+                      return false;
+                    }
+                  });
                   window.webContents.send("open-directory", path, fileList);
                 }
               });
@@ -136,28 +152,28 @@ function renderMenu(window) {
         {
           label: "ID3",
           click: () => {
-            window.loadURL(config["music-id3"]);
+            window.loadURL(`${config["uihost"]}/music`);
             setMenu(template, 1, window);
           },
         },
         {
           label: "对比库",
           click: () => {
-            window.loadURL(config["music-library"]);
+            window.loadURL(`${config["uihost"]}/library`);
             setMenu(template, 2, window);
           },
         },
         {
           label: "格式化cue编码",
           click: () => {
-            window.loadURL(config["cue-encode"]);
+            window.loadURL(`${config["uihost"]}/encode`);
             setMenu(template, 3, window);
           },
         },
       ],
     },
   ];
-  window.loadURL(config["music-id3"]);
+  window.loadURL(`${config["uihost"]}/music`);
   setMenu(template, 1, window);
 }
 

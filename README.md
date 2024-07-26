@@ -1,6 +1,6 @@
 # music-electron
 
-这是一个基础的管理音乐ID3信息的项目，基于electron,UI界面使用[visualizeMusicFrontend项目的electron分支](https://github.com/ziitar/visualizeMusicFrontend/tree/electron)，服务端使用[visualizeMusicBackend](https://github.com/ziitar/visualizeMusicBackend),三者配合可以实现读取音乐ID3信息并搜索网易云音乐对应的ID3数据写入音频文件里。
+这是一个基础的管理音乐ID3信息的项目，基于electron,UI界面使用[visualizeMusicFrontend项目](https://github.com/ziitar/visualizeMusicFrontend)，服务端使用[visualizeMusicBackend](https://github.com/ziitar/visualizeMusicBackend),三者配合可以实现读取音乐ID3信息并搜索网易云音乐对应的ID3数据写入音频文件里。
 
 ## 特性功能
    - [x] ID3信息写入
@@ -26,9 +26,30 @@
 ```
 
 ## 配置
-可以在config.json配置中设置前端UI界面的地址,也可以通过更改ID3-item字段来更改写入音频文件的ID3字段
+需要在根目录添加config.json文件用于设置前端UI界面的地址以及后端服务地址,也可以通过更改ID3-item字段来更改写入音频文件的ID3字段
+```json
+{
+  "source": "path",
+  "uihost": "http://localhost:4200",
+  "backendhost": "http://localhost:7000",
+  "ID3-item": [
+    "title",
+    "artist",
+    "album",
+    "year",
+    "image",
+    "comment",
+    "genre",
+    "totalTracks",
+    "trackNumber",
+    "albumartist",
+    "discNumber"
+  ]
+}
 
-## 编译music-tags.py为可以执行文件
+```
+## (可选)编译music-tags.py为可以执行文件
+项目中需要用到python的music_tag库对音频文件进行Tag写入，所以需要将py文件夹下的music-tags.py编译为可执行文件。
 for windows cmd
 ```cmd
 > cd py
